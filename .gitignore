@@ -1,0 +1,29 @@
+
+# Executaveis gerados pelo Go
+*
+!*/
+!*.*
+*.exe
+*.test
+*.out
+*.prof
+
+# Excecoes para arquivos sem extensao
+# (adicionar aqui se forem necessarios no futuro)
+
+# Chaves de API e segredos
+apikey.txt
+apikeys.json
+
+# Variaveis de ambiente
+.env
+
+# Editores
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
