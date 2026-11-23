@@ -1,3 +1,9 @@
+-- =====================================================
+-- BANCO DE DADOS: controle_estoque
+-- DESCRIÇÃO: Estrutura das tabelas do sistema de
+-- controle de estoque.
+-- =====================================================
+
 -- TABELA DE PRODUTOS
 
 CREATE TABLE produtos (
