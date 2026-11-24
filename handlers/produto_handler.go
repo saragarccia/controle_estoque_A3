@@ -4,6 +4,7 @@ import (
 	"controle_estoque/produtos"
 	"controle_estoque/repository"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -32,8 +33,13 @@ func (h *ProdutoHandler) Consultar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	produto, err := h.Repository.Consultar(id)
-	if err != nil {
+	if errors.Is(err, produtos.ErrProdutoNaoEncontrado) {
 		http.Error(w, "Produto não encontrado", http.StatusNotFound)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, "Erro ao consultar produto", http.StatusInternalServerError)
 		return
 	}
 
@@ -91,6 +97,12 @@ func (h *ProdutoHandler) Atualizar(w http.ResponseWriter, r *http.Request) {
 	produto.ID = id
 
 	err = h.Repository.Atualizar(produto)
+
+	if errors.Is(err, produtos.ErrProdutoNaoEncontrado) {
+		http.Error(w, "Produto não encontrado", http.StatusNotFound)
+		return
+	}
+
 	if err != nil {
 		http.Error(w, "Erro ao atualizar produto", http.StatusInternalServerError)
 		return
@@ -107,6 +119,12 @@ func (h *ProdutoHandler) Excluir(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.Repository.Excluir(id)
+
+	if errors.Is(err, produtos.ErrProdutoNaoEncontrado) {
+		http.Error(w, "Produto não encontrado", http.StatusNotFound)
+		return
+	}
+
 	if err != nil {
 		http.Error(w, "Erro ao excluir produto", http.StatusInternalServerError)
 		return
