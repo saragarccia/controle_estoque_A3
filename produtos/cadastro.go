@@ -5,7 +5,7 @@ import (
     "fmt"
 )
 
-func CadastrarProduto(db *sql.DB, p Produto) error {
+func CadastrarProduto(db *sql.DB, p Produto) (Produto, error) {
     query := `
         INSERT INTO produtos
         (nome, descricao, codigo, quantidade, preco, quantidade_minima)
@@ -24,9 +24,9 @@ func CadastrarProduto(db *sql.DB, p Produto) error {
     ).Scan(&p.ID)
 
     if err != nil {
-        return fmt.Errorf("erro ao cadastrar produto: %w", err)
+        return Produto{}, fmt.Errorf("erro ao cadastrar produto: %w", err)
     }
 
     fmt.Println("Produto cadastrado com sucesso! ID:", p.ID)
-    return nil
+    return p, nil
 }
