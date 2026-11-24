@@ -8,6 +8,13 @@ import (
 // A quantidade em estoque deve ser alterada apenas
 // pelas operações de entrada e saída de produtos.
 func AtualizarProduto(db *sql.DB, p Produto) error {
+    if p.ID <= 0 {
+        return fmt.Errorf("ID do produto inválido")
+    }
+
+    if err := ValidarProduto(p); err != nil {
+        return err
+    }
     query := `
         UPDATE produtos
         SET nome = $1,

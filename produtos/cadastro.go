@@ -6,6 +6,13 @@ import (
 )
 
 func CadastrarProduto(db *sql.DB, p Produto) (Produto, error) {
+   if err := ValidarProduto(p); err != nil {
+        return Produto{}, err
+    }
+
+    if p.Quantidade < 0 {
+        return Produto{}, fmt.Errorf("a quantidade não pode ser negativa")
+    }
     query := `
         INSERT INTO produtos
         (nome, descricao, codigo, quantidade, preco, quantidade_minima)
