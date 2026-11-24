@@ -32,6 +32,7 @@ func main() {
 		fmt.Println("3 - Consultar produto por ID")
 		fmt.Println("4 - Atualizar produto")
 		fmt.Println("5 - Excluir produto")
+		fmt.Println("6 - Reabastecer produto")
 		fmt.Println("0 - Sair")
 
 		switch lerTexto("Escolha uma opção: ") {
@@ -45,6 +46,8 @@ func main() {
 			atualizar(db)
 		case "5":
 			excluir(db)
+		case "6":
+			darEntrada(db)
 		case "0":
 			fmt.Println("Encerrando...")
 			return
@@ -199,5 +202,33 @@ func lerFloatPadrao(campo string, atual float64) float64 {
 			return f
 		}
 		fmt.Println("Digite um valor numérico válido (ex: 10.50).")
+	}
+}
+
+func darEntrada(db *sql.DB) {
+	lista, err := produtos.ListarProdutos(db)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if len(lista) == 0 {
+		fmt.Println("Nenhum produto adicionado ao estoque.")
+		return
+	}
+
+	for _, p := range lista {
+		imprimirProduto(p)
+	}
+
+	id := lerInt("ID do produto a reabastecer: ")
+
+	quantidade := lerInt("Quantidade de novos produtos: ")
+	for quantidade <= 0 {
+		fmt.Println("A quantidade deve ser maior que zero")
+		quantidade = lerInt("Quantidade de novos produtos: ")
+	}
+	if err := produtos.EntradaProduto(db, id, quantidade); err != nil {
+		fmt.Println(err)
 	}
 }
