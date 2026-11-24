@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func EntradaProduto(db *sql.DB, id int, quantidade int) error {
+func EntradaProduto(db *sql.DB, id int, quantidade int, responsavel string) error {
 	query := `
         UPDATE produtos
         SET quantidade = quantidade + $1
@@ -29,6 +29,10 @@ func EntradaProduto(db *sql.DB, id int, quantidade int) error {
 
 	if linhas == 0 {
 		return fmt.Errorf("produto com ID %d não encontrado", id)
+	}
+
+	if err := RegistrarHistorico(db, id, "saida", quantidade, responsavel); err != nil {
+		return err
 	}
 
 	fmt.Println("Produto abastecido com sucesso!")

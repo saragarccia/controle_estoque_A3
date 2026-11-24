@@ -34,6 +34,7 @@ func main() {
 		fmt.Println("5 - Excluir produto")
 		fmt.Println("6 - Reabastecer produto")
 		fmt.Println("7 - Dar saida em estoque")
+		fmt.Println("8 - Histórico de movimentações")
 		fmt.Println("0 - Sair")
 
 		switch lerTexto("Escolha uma opção: ") {
@@ -51,6 +52,8 @@ func main() {
 			darEntrada(db)
 		case "7":
 			darSaida(db)
+		case "8":
+			historico(db)
 		case "0":
 			fmt.Println("Encerrando...")
 			return
@@ -231,10 +234,14 @@ func darEntrada(db *sql.DB) {
 		fmt.Println("A quantidade deve ser maior que zero")
 		quantidade = lerInt("Quantidade de novos produtos: ")
 	}
-	if err := produtos.EntradaProduto(db, id, quantidade); err != nil {
+
+	responsavel := lerTextoPadrao("Responsável pela entrada", "Sem responsável")
+
+	if err := produtos.EntradaProduto(db, id, quantidade, responsavel); err != nil {
 		fmt.Println(err)
 	}
 }
+
 func darSaida(db *sql.DB) {
 	lista, err := produtos.ListarProdutos(db)
 	if err != nil {
@@ -258,7 +265,28 @@ func darSaida(db *sql.DB) {
 		fmt.Println("A quantidade deve ser maior que zero")
 		quantidade = lerInt("Quantidade de remoções: ")
 	}
-	if err := produtos.SaidaProduto(db, id, quantidade); err != nil {
+
+	responsavel := lerTextoPadrao("Responsável pela saída", "Sem responsável")
+
+	if err := produtos.SaidaProduto(db, id, quantidade, responsavel); err != nil {
 		fmt.Println(err)
 	}
+}
+
+func historico(db *sql.DB) {
+	lista, err := produtos.ListarHistorico(db)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	if len(lista) == 0 {
+		fmt.Println("Historico do estoque não teve movimentação de entrada ou saída.")
+	}
+	for _, m := range lista {
+		imprimirMovimentacao(m)
+	}
+}
+func imprimirMovimentacao(m produtos.Movimentacao) {
+	fmt.Printf("%s | %-7s | [%d] %s | qtd: %d | resp: %s\n",
+		m.Data.Format("02/01/2006 15:04"), m.Tipo, m.ProdutoID, m.ProdutoNome, m.Quantidade, m.Responsavel)
 }
