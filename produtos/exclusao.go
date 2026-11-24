@@ -6,6 +6,9 @@ import (
 )
 
 func ExcluirProduto(db *sql.DB, id int) error {
+    if id <= 0 {
+        return fmt.Errorf("ID do produto inválido")
+    }
     query := `
         DELETE FROM produtos
         WHERE id = $1
