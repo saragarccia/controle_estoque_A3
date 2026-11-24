@@ -4,7 +4,9 @@ import (
     "database/sql"
     "fmt"
 )
-
+// AtualizarProduto altera os dados cadastrais do produto.
+// A quantidade em estoque deve ser alterada apenas
+// pelas operações de entrada e saída de produtos.
 func AtualizarProduto(db *sql.DB, p Produto) error {
     query := `
         UPDATE produtos
