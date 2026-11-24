@@ -33,6 +33,7 @@ func main() {
 		fmt.Println("4 - Atualizar produto")
 		fmt.Println("5 - Excluir produto")
 		fmt.Println("6 - Reabastecer produto")
+		fmt.Println("7 - Dar saida em estoque")
 		fmt.Println("0 - Sair")
 
 		switch lerTexto("Escolha uma opção: ") {
@@ -48,6 +49,8 @@ func main() {
 			excluir(db)
 		case "6":
 			darEntrada(db)
+		case "7":
+			darSaida(db)
 		case "0":
 			fmt.Println("Encerrando...")
 			return
@@ -229,6 +232,33 @@ func darEntrada(db *sql.DB) {
 		quantidade = lerInt("Quantidade de novos produtos: ")
 	}
 	if err := produtos.EntradaProduto(db, id, quantidade); err != nil {
+		fmt.Println(err)
+	}
+}
+func darSaida(db *sql.DB) {
+	lista, err := produtos.ListarProdutos(db)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	if len(lista) == 0 {
+		fmt.Println("Nenhum removido do estoque.")
+		return
+	}
+
+	for _, p := range lista {
+		imprimirProduto(p)
+	}
+
+	id := lerInt("ID do produto a remover: ")
+
+	quantidade := lerInt("Quantidade de remoções: ")
+	for quantidade <= 0 {
+		fmt.Println("A quantidade deve ser maior que zero")
+		quantidade = lerInt("Quantidade de remoções: ")
+	}
+	if err := produtos.SaidaProduto(db, id, quantidade); err != nil {
 		fmt.Println(err)
 	}
 }
