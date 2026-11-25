@@ -27,3 +27,5 @@ apikeys.json
 # Sistema operacional
 .DS_Store
 Thumbs.db
+
+http-client.private.env.json

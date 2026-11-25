@@ -95,9 +95,56 @@ O arquivo `schema.sql` contém os comandos SQL utilizados para criar a estrutura
 
 ## 6. Execução do projeto
 
-É necessário ter o Go e o PostgreSQL instalados e configurar corretamente o arquivo `.env`.
+É necessário ter o Go e o PostgreSQL instalados. Os comandos SQL abaixo devem ser executados no `psql` com o superusuário `postgres`.
 
-Para verificar a compilação:
+### 6.1. Criar o banco de dados
+
+```sql
+CREATE DATABASE controle_estoque;
+```
+
+### 6.2. Aplicar o schema
+
+Na pasta do projeto, crie as tabelas a partir do arquivo `schema.sql`:
+
+
+```bash
+psql -U postgres -d controle_estoque -f schema.sql
+```
+
+### 6.3. Criar o usuário da aplicação
+
+Crie um usuário próprio:
+
+```sql
+CREATE USER app_estoque WITH PASSWORD 'sua_senha';
+```
+
+### 6.4. Conceder as permissões
+
+O usuário da aplicação recebe apenas as permissões necessárias em cada tabela:
+
+```sql
+GRANT SELECT, INSERT, UPDATE, DELETE ON produtos TO app_estoque;
+GRANT SELECT, INSERT ON api_clients TO app_estoque;
+```
+
+- `produtos`: leitura, cadastro, atualização e exclusão, usadas pelas rotas da API.
+- `api_clients`: cadastro de chaves, pelo comando `gerar-chave`, e consulta, pelo middleware de autenticação.
+
+### 6.5. Configurar as variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto, conforme o exemplo da seção 4, usando o usuário e a senha criados no passo 6.3.
+
+### 6.6. Gerar uma chave de API
+
+```bash
+go run ./cmd/gerar-chave NOME_DO_CLIENTE
+```
+
+A chave é exibida uma única vez no terminal. Guarde-a: o banco armazena apenas o hash SHA-256 da chave.
+
+### 6.7. Iniciar o servidor
 
 ```bash
 go build ./...
@@ -108,3 +155,29 @@ Para executar:
 ```bash
 go run main.go
 ```
+
+O servidor fica disponível em `http://localhost:8080`.
+
+## 7. Uso da API com curl
+
+Os exemplos abaixo usam o `curl` com a sintaxe do Bash (Linux, macOS ou Git Bash no Windows). A opção `-i` mostra o código de status e os cabeçalhos da resposta.
+
+Antes de executar os comandos, guarde a chave gerada no passo 6.6 em uma variável:
+
+
+| Operação | Comando | Sucesso | Erros possíveis |
+|---|---|---|---|
+| Listar produtos | `curl -i http://localhost:8080/produtos` | `200 OK` com a lista em JSON | `500` |
+| Consultar um produto | `curl -i http://localhost:8080/produtos/1` | `200 OK` com o produto em JSON | `400` ID inválido · `404` produto não encontrado · `500` |
+| Cadastrar um produto | `curl -i -X POST http://localhost:8080/produtos -H "X-API-Key: $CHAVE" -H "Content-Type: application/json" -d '{"nome":"Teclado","descricao":"Teclado ABNT2","codigo":"TEC01","quantidade":10,"preco":199.90,"quantidade_minima":2}'` | `201 Created` com o cabeçalho `Location: /produtos/{id}` | `400` dados inválidos · `401` chave ausente ou inválida · `500` |
+| Atualizar um produto | `curl -i -X PUT http://localhost:8080/produtos/1 -H "X-API-Key: $CHAVE" -H "Content-Type: application/json" -d '{"nome":"Teclado sem fio","descricao":"Teclado ABNT2 sem fio","codigo":"TEC01","preco":249.90,"quantidade_minima":3}'` | `204 No Content` | `400` ID ou dados inválidos · `401` chave ausente ou inválida · `404` produto não encontrado · `500` |
+| Excluir um produto | `curl -i -X DELETE http://localhost:8080/produtos/1 -H "X-API-Key: $CHAVE"` | `204 No Content` | `400` ID inválido · `401` chave ausente ou inválida · `404` produto não encontrado · `500` |
+
+Observações:
+
+- Troque o `1` das URLs pelo ID do produto desejado. O ID de um produto recém-cadastrado aparece no cabeçalho `Location` da resposta.
+- No cadastro, `nome` e `codigo` são obrigatórios, e `quantidade`, `preco` e `quantidade_minima` não podem ser negativos.
+- A atualização não altera a `quantidade` em estoque. Ela só muda por entradas e saídas de produtos.
+- O `codigo` não pode se repetir entre produtos.
+
+No PowerShell do Windows, use `curl.exe` no lugar de `curl`, defina a chave com `$CHAVE = "cole_aqui_a_chave_gerada"` e escape as aspas internas do JSON com barra invertida, por exemplo `-d '{\"nome\":\"Teclado\", ...}'`.

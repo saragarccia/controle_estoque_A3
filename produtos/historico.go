@@ -30,7 +30,7 @@ func RegistrarHistorico(db *sql.DB, id int, tipo string, quantidade int, respons
 func ListarHistorico(db *sql.DB) ([]Movimentacao, error) {
 	query := `
         SELECT m.id, m.produto_id, COALESCE(p.nome, 'Produto excluído'),
-               m.tipo, m.quantidade, m.responsavel, m.created_at
+               m.tipo, m.quantidade, COALESCE(m.responsavel, 'Sem responsável'), m.created_at
         FROM movimentacoes m
         LEFT JOIN produtos p ON p.id = m.produto_id
         ORDER BY m.created_at DESC, m.id DESC
