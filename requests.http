@@ -1,0 +1,260 @@
+### GET /health sem chave → 200 OK (rota pública)
+GET {{baseUrl}}/health
+
+
+### GET /produtos sem chave → 401 Unauthorized
+GET {{baseUrl}}/produtos
+
+
+### GET /produtos/{id} sem chave → 401 Unauthorized
+GET {{baseUrl}}/produtos/1
+
+
+### GET /produtos com chave inválida → 401 Unauthorized
+GET {{baseUrl}}/produtos
+X-API-Key: chave-que-nao-existe
+
+
+### POST /produtos → 201 Created, com cabeçalho Location
+POST {{baseUrl}}/produtos
+Content-Type: application/json
+X-API-Key: {{chave}}
+
+{
+  "nome": "Teclado",
+  "descricao": "Teclado mecânico ABNT2",
+  "codigo": "TEC-{{$uuid}}",
+  "quantidade": 10,
+  "preco": 199.90,
+  "quantidade_minima": 2
+}
+
+> {%
+    const location = response.headers.valueOf("Location");
+    client.global.set("produtoId", location.split("/").pop());
+%}
+
+
+### GET /produtos → 200 OK (lista com o produto criado)
+GET {{baseUrl}}/produtos
+X-API-Key: {{chave}}
+
+
+### GET /produtos/{id} → 200 OK
+GET {{baseUrl}}/produtos/{{produtoId}}
+X-API-Key: {{chave}}
+
+
+### GET /produtos/{id} inexistente → 404 Not Found
+GET {{baseUrl}}/produtos/999999
+X-API-Key: {{chave}}
+
+
+### GET /produtos/{id} com ID inválido → 400 Bad Request
+GET {{baseUrl}}/produtos/abc
+X-API-Key: {{chave}}
+
+
+### POST /produtos sem chave → 401 Unauthorized
+POST {{baseUrl}}/produtos
+Content-Type: application/json
+
+{
+  "nome": "Mouse",
+  "codigo": "MOU-{{$uuid}}",
+  "quantidade": 5,
+  "preco": 50,
+  "quantidade_minima": 1
+}
+
+
+### POST /produtos sem nome → 400 Bad Request
+POST {{baseUrl}}/produtos
+Content-Type: application/json
+X-API-Key: {{chave}}
+
+{
+  "nome": "",
+  "codigo": "SEM-NOME",
+  "quantidade": 5,
+  "preco": 50,
+  "quantidade_minima": 1
+}
+
+
+### POST /produtos com quantidade negativa → 400 Bad Request
+POST {{baseUrl}}/produtos
+Content-Type: application/json
+X-API-Key: {{chave}}
+
+{
+  "nome": "Monitor",
+  "codigo": "MON-{{$uuid}}",
+  "quantidade": -3,
+  "preco": 900,
+  "quantidade_minima": 1
+}
+
+
+### POST /produtos com JSON malformado → 400 Bad Request
+POST {{baseUrl}}/produtos
+Content-Type: application/json
+X-API-Key: {{chave}}
+
+{ "nome": "Quebrado",
+
+
+### PUT /produtos/{id} → 204 No Content
+PUT {{baseUrl}}/produtos/{{produtoId}}
+Content-Type: application/json
+X-API-Key: {{chave}}
+
+{
+  "nome": "Teclado sem fio",
+  "descricao": "Teclado mecânico sem fio ABNT2",
+  "codigo": "TEC-{{$uuid}}",
+  "preco": 249.90,
+  "quantidade_minima": 3
+}
+
+
+### PUT /produtos/{id} com preço negativo → 400 Bad Request
+PUT {{baseUrl}}/produtos/{{produtoId}}
+Content-Type: application/json
+X-API-Key: {{chave}}
+
+{
+  "nome": "Teclado",
+  "codigo": "TEC-INVALIDO",
+  "preco": -10,
+  "quantidade_minima": 3
+}
+
+
+### PUT /produtos/{id} inexistente → 404 Not Found
+PUT {{baseUrl}}/produtos/999999
+Content-Type: application/json
+X-API-Key: {{chave}}
+
+{
+  "nome": "Fantasma",
+  "codigo": "FAN-{{$uuid}}",
+  "preco": 10,
+  "quantidade_minima": 1
+}
+
+
+### PUT /produtos/{id} sem chave → 401 Unauthorized
+PUT {{baseUrl}}/produtos/{{produtoId}}
+Content-Type: application/json
+
+{
+  "nome": "Teclado",
+  "codigo": "TEC-{{$uuid}}",
+  "preco": 100,
+  "quantidade_minima": 1
+}
+
+
+### POST /produtos/{id}/entrada → 204 No Content (estoque passa de 10 para 15)
+POST {{baseUrl}}/produtos/{{produtoId}}/entrada
+Content-Type: application/json
+X-API-Key: {{chave}}
+
+{ "quantidade": 5, "responsavel": "Rafa" }
+
+
+### POST /produtos/{id}/entrada com quantidade zero → 400 Bad Request
+POST {{baseUrl}}/produtos/{{produtoId}}/entrada
+Content-Type: application/json
+X-API-Key: {{chave}}
+
+{ "quantidade": 0 }
+
+
+### POST /produtos/{id}/entrada de produto inexistente → 404 Not Found
+POST {{baseUrl}}/produtos/999999/entrada
+Content-Type: application/json
+X-API-Key: {{chave}}
+
+{ "quantidade": 5 }
+
+
+### POST /produtos/{id}/entrada sem chave → 401 Unauthorized
+POST {{baseUrl}}/produtos/{{produtoId}}/entrada
+Content-Type: application/json
+
+{ "quantidade": 5 }
+
+
+### POST /produtos/{id}/saida → 204 No Content (estoque passa de 15 para 12)
+POST {{baseUrl}}/produtos/{{produtoId}}/saida
+Content-Type: application/json
+X-API-Key: {{chave}}
+
+{ "quantidade": 3, "responsavel": "Rafa" }
+
+
+### POST /produtos/{id}/saida maior que o estoque → 409 Conflict
+POST {{baseUrl}}/produtos/{{produtoId}}/saida
+Content-Type: application/json
+X-API-Key: {{chave}}
+
+{ "quantidade": 100000 }
+
+
+### POST /produtos/{id}/saida de produto inexistente → 404 Not Found
+POST {{baseUrl}}/produtos/999999/saida
+Content-Type: application/json
+X-API-Key: {{chave}}
+
+{ "quantidade": 1 }
+
+
+### POST /produtos/{id}/saida sem chave → 401 Unauthorized
+POST {{baseUrl}}/produtos/{{produtoId}}/saida
+Content-Type: application/json
+
+{ "quantidade": 1 }
+
+
+### GET /produtos/{id}/movimentacoes → 200 OK (a saída e a entrada acima)
+GET {{baseUrl}}/produtos/{{produtoId}}/movimentacoes
+X-API-Key: {{chave}}
+
+
+### GET /produtos/{id}/movimentacoes de produto inexistente → 404 Not Found
+GET {{baseUrl}}/produtos/999999/movimentacoes
+X-API-Key: {{chave}}
+
+
+### GET /produtos/{id}/movimentacoes sem chave → 401 Unauthorized
+GET {{baseUrl}}/produtos/{{produtoId}}/movimentacoes
+
+
+### GET /movimentacoes → 200 OK (histórico completo)
+GET {{baseUrl}}/movimentacoes
+X-API-Key: {{chave}}
+
+
+### GET /movimentacoes sem chave → 401 Unauthorized
+GET {{baseUrl}}/movimentacoes
+
+
+### DELETE /produtos/{id} sem chave → 401 Unauthorized
+DELETE {{baseUrl}}/produtos/{{produtoId}}
+
+
+### DELETE /produtos/{id} com ID inválido → 400 Bad Request
+DELETE {{baseUrl}}/produtos/abc
+X-API-Key: {{chave}}
+
+
+### DELETE /produtos/{id} → 204 No Content
+DELETE {{baseUrl}}/produtos/{{produtoId}}
+X-API-Key: {{chave}}
+
+
+### DELETE /produtos/{id} já excluído → 404 Not Found
+DELETE {{baseUrl}}/produtos/{{produtoId}}
+X-API-Key: {{chave}}
