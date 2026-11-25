@@ -13,11 +13,11 @@ type Produto struct {
 }
 
 type Movimentacao struct {
-	ID          int
-	ProdutoID   int
-	ProdutoNome string
-	Tipo        string
-	Quantidade  int
-	Responsavel string
-	Data        time.Time
+	ID          int       `json:"id"`
+	ProdutoID   int       `json:"produto_id"`
+	ProdutoNome string    `json:"produto_nome"`
+	Tipo        string    `json:"tipo"`
+	Quantidade  int       `json:"quantidade"`
+	Responsavel string    `json:"responsavel"`
+	Data        time.Time `json:"data"`
 }

@@ -22,9 +22,12 @@ func main() {
 
 	repositorio := &repository.ProdutoRepositoryDB{DB: db}
 	handler := &handlers.ProdutoHandler{Repository: repositorio}
+	movimentacaoRepositorio := &repository.MovimentacaoRepositoryDB{DB: db}
+	movimentacaoHandler := &handlers.MovimentacaoHandler{Repository: movimentacaoRepositorio}
 
 	mux := http.NewServeMux()
 	routes.RegistrarRotas(mux, handler, db)
+	routes.RegistrarRotasMovimentacao(mux, movimentacaoHandler, db)
 
 	fmt.Println("Servidor rodando em http://localhost:8080")
 

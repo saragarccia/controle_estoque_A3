@@ -7,6 +7,7 @@ import (
 )
 
 var ErrProdutoNaoEncontrado = errors.New("produto não encontrado")
+var ErrEstoqueInsuficiente = errors.New("estoque insuficiente para a saída")
 
 func ConsultarProduto(db *sql.DB, id int) (Produto, error) {
 	var p Produto

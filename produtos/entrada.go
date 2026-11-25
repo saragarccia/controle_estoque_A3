@@ -28,9 +28,8 @@ func EntradaProduto(db *sql.DB, id int, quantidade int, responsavel string) erro
 	}
 
 	if linhas == 0 {
-		return fmt.Errorf("produto com ID %d não encontrado", id)
+		return fmt.Errorf("%w: ID %d", ErrProdutoNaoEncontrado, id)
 	}
-
 	if err := RegistrarHistorico(db, id, "entrada", quantidade, responsavel); err != nil {
 		return err
 	}

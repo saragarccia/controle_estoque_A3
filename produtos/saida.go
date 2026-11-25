@@ -9,7 +9,7 @@ func SaidaProduto(db *sql.DB, id int, quantidade int, responsavel string) error 
 	query := `
         UPDATE produtos
         SET quantidade = quantidade - $1
-        WHERE id = $2
+        WHERE id = $2 AND quantidade >= $1
     `
 
 	resultado, err := db.Exec(
@@ -28,7 +28,10 @@ func SaidaProduto(db *sql.DB, id int, quantidade int, responsavel string) error 
 	}
 
 	if linhas == 0 {
-		return fmt.Errorf("produto com ID %d não encontrado", id)
+		if _, err := ConsultarProduto(db, id); err != nil {
+			return err
+		}
+		return ErrEstoqueInsuficiente
 	}
 
 	if err := RegistrarHistorico(db, id, "saida", quantidade, responsavel); err != nil {

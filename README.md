@@ -127,9 +127,13 @@ O usuário da aplicação recebe apenas as permissões necessárias em cada tabe
 ```sql
 GRANT SELECT, INSERT, UPDATE, DELETE ON produtos TO app_estoque;
 GRANT SELECT, INSERT ON api_clients TO app_estoque;
+GRANT SELECT, INSERT, UPDATE, DELETE ON produtos TO app_estoque;
+GRANT SELECT, INSERT ON api_clients TO app_estoque;
+GRANT SELECT, INSERT ON movimentacoes TO app_estoque;
 ```
 
 - `produtos`: leitura, cadastro, atualização e exclusão, usadas pelas rotas da API.
+- `movimentacoes`: registro das entradas e saídas e consulta do histórico.
 - `api_clients`: cadastro de chaves, pelo comando `gerar-chave`, e consulta, pelo middleware de autenticação.
 
 ### 6.5. Configurar as variáveis de ambiente
@@ -172,7 +176,10 @@ Antes de executar os comandos, guarde a chave gerada no passo 6.6 em uma variáv
 | Cadastrar um produto | `curl -i -X POST http://localhost:8080/produtos -H "X-API-Key: $CHAVE" -H "Content-Type: application/json" -d '{"nome":"Teclado","descricao":"Teclado ABNT2","codigo":"TEC01","quantidade":10,"preco":199.90,"quantidade_minima":2}'` | `201 Created` com o cabeçalho `Location: /produtos/{id}` | `400` dados inválidos · `401` chave ausente ou inválida · `500` |
 | Atualizar um produto | `curl -i -X PUT http://localhost:8080/produtos/1 -H "X-API-Key: $CHAVE" -H "Content-Type: application/json" -d '{"nome":"Teclado sem fio","descricao":"Teclado ABNT2 sem fio","codigo":"TEC01","preco":249.90,"quantidade_minima":3}'` | `204 No Content` | `400` ID ou dados inválidos · `401` chave ausente ou inválida · `404` produto não encontrado · `500` |
 | Excluir um produto | `curl -i -X DELETE http://localhost:8080/produtos/1 -H "X-API-Key: $CHAVE"` | `204 No Content` | `400` ID inválido · `401` chave ausente ou inválida · `404` produto não encontrado · `500` |
-
+| Registrar entrada no estoque | `curl -i -X POST http://localhost:8080/produtos/1/entrada -H "X-API-Key: $CHAVE" -H "Content-Type: application/json" -d '{"quantidade":10,"responsavel":"Rafa"}'` | `204 No Content` | `400` ID inválido ou quantidade menor ou igual a zero · `401` chave ausente ou inválida · `404` produto não encontrado · `500` |
+| Registrar saída do estoque | `curl -i -X POST http://localhost:8080/produtos/1/saida -H "X-API-Key: $CHAVE" -H "Content-Type: application/json" -d '{"quantidade":3,"responsavel":"Rafa"}'` | `204 No Content` | `400` ID inválido ou quantidade menor ou igual a zero · `401` chave ausente ou inválida · `404` produto não encontrado · `409` estoque insuficiente · `500` |
+| Histórico de um produto | `curl -i http://localhost:8080/produtos/1/movimentacoes` | `200 OK` com as movimentações do produto em JSON, da mais recente para a mais antiga | `400` ID inválido · `404` produto não encontrado · `500` |
+| Histórico completo | `curl -i http://localhost:8080/movimentacoes` | `200 OK` com todas as movimentações em JSON, da mais recente para a mais antiga | `500` |
 Observações:
 
 - Troque o `1` das URLs pelo ID do produto desejado. O ID de um produto recém-cadastrado aparece no cabeçalho `Location` da resposta.

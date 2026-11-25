@@ -42,7 +42,34 @@ func ListarHistorico(db *sql.DB) ([]Movimentacao, error) {
 	}
 	defer rows.Close()
 
-	var lista []Movimentacao
+	return lerMovimentacoes(rows)
+}
+
+func ListarHistoricoProduto(db *sql.DB, id int) ([]Movimentacao, error) {
+	if _, err := ConsultarProduto(db, id); err != nil {
+		return nil, err
+	}
+
+	query := `
+        SELECT m.id, m.produto_id, COALESCE(p.nome, 'Produto excluído'),
+               m.tipo, m.quantidade, COALESCE(m.responsavel, 'Sem responsável'), m.created_at
+        FROM movimentacoes m
+        LEFT JOIN produtos p ON p.id = m.produto_id
+        WHERE m.produto_id = $1
+        ORDER BY m.created_at DESC, m.id DESC
+    `
+
+	rows, err := db.Query(query, id)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao listar histórico do produto: %w", err)
+	}
+	defer rows.Close()
+
+	return lerMovimentacoes(rows)
+}
+
+func lerMovimentacoes(rows *sql.Rows) ([]Movimentacao, error) {
+	lista := []Movimentacao{}
 
 	for rows.Next() {
 		var m Movimentacao
