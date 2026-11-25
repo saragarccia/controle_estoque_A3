@@ -35,11 +35,12 @@ CREATE TABLE movimentacoes (
     tipo VARCHAR(10) NOT NULL,
     quantidade INTEGER NOT NULL,
     motivo VARCHAR(255),
+    responsavel VARCHAR(100),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-    CONSTRAINT fk_produto
+    /*CONSTRAINT fk_produto
         FOREIGN KEY (produto_id)
-        REFERENCES produtos(id),
+        REFERENCES produtos(id),*/
 
     CONSTRAINT chk_tipo
         CHECK (tipo IN ('entrada', 'saida')),
