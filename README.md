@@ -116,25 +116,42 @@ psql -U postgres -d controle_estoque -f schema.sql
 
 Crie um usuário próprio:
 
+```bash
+psql -U postgres
+```
 ```sql
 CREATE USER app_estoque WITH PASSWORD 'sua_senha';
 ```
 
 ### 6.4. Conceder as permissões
 
-O usuário da aplicação recebe apenas as permissões necessárias em cada tabela:
+As permissões são concedidas nas tabelas do banco `controle_estoque`, por isso é necessário estar conectado a ele. Ainda no `psql`, troque de banco:
+
+```sql
+\c controle_estoque
+```
+
+O prompt deve mudar para `controle_estoque=#`. Em seguida, conceda ao usuário da aplicação apenas as permissões necessárias em cada tabela:
 
 ```sql
 GRANT SELECT, INSERT, UPDATE, DELETE ON produtos TO app_estoque;
-GRANT SELECT, INSERT ON api_clients TO app_estoque;
-GRANT SELECT, INSERT, UPDATE, DELETE ON produtos TO app_estoque;
-GRANT SELECT, INSERT ON api_clients TO app_estoque;
 GRANT SELECT, INSERT ON movimentacoes TO app_estoque;
+GRANT SELECT, INSERT ON api_clients TO app_estoque;
 ```
 
 - `produtos`: leitura, cadastro, atualização e exclusão, usadas pelas rotas da API.
 - `movimentacoes`: registro das entradas e saídas e consulta do histórico.
 - `api_clients`: cadastro de chaves, pelo comando `gerar-chave`, e consulta, pelo middleware de autenticação.
+
+Para conferir as permissões concedidas:
+
+```sql
+SELECT table_name, privilege_type FROM information_schema.role_table_grants WHERE grantee = 'app_estoque' ORDER BY table_name;
+```
+
+O resultado deve listar as três tabelas com as permissões acima. Para sair do `psql`, digite `\q`.
+
+> Se aparecer `relação "produtos" não existe`, o `psql` não está conectado ao banco `controle_estoque`: confira se o prompt mostra `controle_estoque=#` e se o passo 6.2 foi executado.
 
 ### 6.5. Configurar as variáveis de ambiente
 
