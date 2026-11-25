@@ -28,4 +28,5 @@ apikeys.json
 .DS_Store
 Thumbs.db
 
+#chave privada
 http-client.private.env.json
