@@ -22,6 +22,11 @@ func APIKey(db *sql.DB, next http.Handler) http.Handler {
 
 		chave := r.Header.Get("X-API-Key")
 
+		if chave == "" {
+			http.Error(w, "Chave de API não informada", http.StatusUnauthorized)
+			return
+		}
+
 		hash := sha256.Sum256([]byte(chave))
 		hashHex := hex.EncodeToString(hash[:])
 
