@@ -195,6 +195,24 @@ go run main.go
 
 O servidor fica disponível em `http://localhost:8080`.
 
+### 6.8. Executar os testes da API
+
+Os testes de todas as rotas estão no arquivo `requests.http`, para o cliente HTTP do GoLand ou do IntelliJ.
+
+A chave de API não fica no repositório. Crie, na raiz do projeto, o arquivo `http-client.private.env.json` com a chave gerada no passo 6.6:
+
+```json
+{
+  "local": {
+    "chave": "cole_aqui_a_chave_gerada"
+  }
+}
+```
+
+Esse arquivo está no `.gitignore` e não deve ser enviado ao repositório. O endereço do servidor fica no arquivo `http-client.env.json`, que já faz parte do projeto.
+
+Com o servidor em execução, abra o `requests.http`, selecione o ambiente `local` no seletor "Run with", no topo do editor, e execute **Run All Requests in File**. Cada teste traz no título o resultado esperado.
+
 ## 7. Uso da API com curl
 
 Os exemplos abaixo usam o `curl` com a sintaxe do Bash (Linux, macOS ou Git Bash no Windows). A opção `-i` mostra o código de status e os cabeçalhos da resposta.
