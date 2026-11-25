@@ -73,7 +73,7 @@ func cadastrar(db *sql.DB) {
 		QuantidadeMinima: lerInt("Quantidade mínima: "),
 	}
 
-	if err := produtos.CadastrarProduto(db, p); err != nil {
+	if _, err := produtos.CadastrarProduto(db, p); err != nil {
 		fmt.Println(err)
 	}
 }
