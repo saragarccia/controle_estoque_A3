@@ -61,34 +61,37 @@ O banco possui regras para manter a integridade das informações:
 
 ## 4. Configuração da conexão
 
-A conexão com o PostgreSQL é realizada por meio do arquivo `config/database.go`.
+A conexão com o PostgreSQL é feita pelo arquivo `config/database.go`, com o driver `pgx`. Os dados de acesso não ficam no código: eles são lidos da variável de ambiente `DATABASE_URL`, no formato:
 
-As configurações de acesso são armazenadas em um arquivo `.env` local, que não deve ser enviado ao GitHub.
-
-Exemplo das variáveis necessárias:
-
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=app_estoque
-DB_PASSWORD=sua_senha
-DB_NAME=controle_estoque
-DB_SSLMODE=disable
+```
+postgres://USUARIO:SENHA@HOST:PORTA/BANCO?sslmode=disable
 ```
 
+Exemplo com o usuário criado no passo 6.3:
+
+```
+postgres://app_estoque:sua_senha@localhost:5432/controle_estoque?sslmode=disable
+```
+
+Caracteres especiais na senha (como `@`, `#`, `/` ou `:`) devem ser codificados na URL. Por exemplo, `@` vira `%40` e `#` vira `%23`.
 ## 5. Estrutura do projeto
 
 ```text
 controle_estoque_A3/
-├── config/
-├── produtos/
-├── .env                 # Arquivo local, não versionado
+├── cmd/
+│   └── gerar-chave/     # Comando para gerar chaves de API
+├── config/              # Conexão com o banco (DATABASE_URL)
+├── handlers/            # Handlers HTTP (produtos, movimentações e health)
+├── middleware/          # Autenticação por API Key
+├── produtos/            # Modelos, validação e acesso ao banco (SQL)
+├── repository/          # Interfaces e implementações dos DAOs
+├── routes/              # Registro das rotas
 ├── .gitignore
 ├── go.mod
 ├── go.sum
-├── main.go
+├── main.go              # Lê a configuração e monta o sistema
 ├── README.md
-└── schema.sql
+└── schema.sql           # Estrutura do banco de dados
 ```
 
 O arquivo `schema.sql` contém os comandos SQL utilizados para criar a estrutura do banco de dados.
@@ -155,8 +158,21 @@ O resultado deve listar as três tabelas com as permissões acima. Para sair do 
 
 ### 6.5. Configurar as variáveis de ambiente
 
-Crie um arquivo `.env` na raiz do projeto, conforme o exemplo da seção 4, usando o usuário e a senha criados no passo 6.3.
+Defina a variável `DATABASE_URL` com o usuário e a senha criados no passo 6.3. Ela vale apenas para o terminal em que foi definida, por isso execute os passos 6.6 e 6.7 nesse mesmo terminal.
 
+No Linux, macOS ou Git Bash:
+
+```bash
+export DATABASE_URL="postgres://app_estoque:sua_senha@localhost:5432/controle_estoque?sslmode=disable"
+```
+
+No PowerShell (Windows):
+
+```powershell
+$env:DATABASE_URL = "postgres://app_estoque:sua_senha@localhost:5432/controle_estoque?sslmode=disable"
+```
+
+Se a variável não estiver definida, o servidor encerra com a mensagem `variável de ambiente DATABASE_URL não definida`.
 ### 6.6. Gerar uma chave de API
 
 ```bash

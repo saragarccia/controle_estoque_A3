@@ -9,14 +9,18 @@ import (
 	"net/http"
 )
 
+var rotasPublicas = map[string]bool{
+	"GET /health": true,
+}
+
 func APIKey(db *sql.DB, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		chave := r.Header.Get("X-API-Key")
-
-		if chave == "" {
-			http.Error(w, "Chave de API não informada", http.StatusUnauthorized)
+		if rotasPublicas[r.Method+" "+r.URL.Path] {
+			next.ServeHTTP(w, r)
 			return
 		}
+
+		chave := r.Header.Get("X-API-Key")
 
 		hash := sha256.Sum256([]byte(chave))
 		hashHex := hex.EncodeToString(hash[:])

@@ -2,29 +2,19 @@ package config
 
 import (
 	"database/sql"
-	"fmt"
+	"errors"
 	"os"
 
-	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func ConnectDB() (*sql.DB, error) {
-	err := godotenv.Load()
-	if err != nil {
-		return nil, err
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		return nil, errors.New("variável de ambiente DATABASE_URL não definida")
 	}
 
-	connStr := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_SSLMODE"),
-	)
-	db, err := sql.Open("postgres", connStr)
+	db, err := sql.Open("pgx", databaseURL)
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"controle_estoque/config"
 	"controle_estoque/handlers"
+	"controle_estoque/middleware"
 	"controle_estoque/repository"
 	"controle_estoque/routes"
 	"fmt"
@@ -26,12 +27,12 @@ func main() {
 	movimentacaoHandler := &handlers.MovimentacaoHandler{Repository: movimentacaoRepositorio}
 
 	mux := http.NewServeMux()
-	routes.RegistrarRotas(mux, handler, db)
-	routes.RegistrarRotasMovimentacao(mux, movimentacaoHandler, db)
+	routes.RegistrarRotas(mux, handler)
+	routes.RegistrarRotasMovimentacao(mux, movimentacaoHandler)
 
 	fmt.Println("Servidor rodando em http://localhost:8080")
 
-	err = http.ListenAndServe(":8080", mux)
+	err = http.ListenAndServe(":8080", middleware.APIKey(db, mux))
 	if err != nil {
 		fmt.Println("Erro ao iniciar servidor:", err)
 	}
