@@ -95,9 +95,56 @@ O arquivo `schema.sql` contém os comandos SQL utilizados para criar a estrutura
 
 ## 6. Execução do projeto
 
-É necessário ter o Go e o PostgreSQL instalados e configurar corretamente o arquivo `.env`.
+É necessário ter o Go e o PostgreSQL instalados. Os comandos SQL abaixo devem ser executados no `psql` com o superusuário `postgres`.
 
-Para verificar a compilação:
+### 6.1. Criar o banco de dados
+
+```sql
+CREATE DATABASE controle_estoque;
+```
+
+### 6.2. Aplicar o schema
+
+Na pasta do projeto, crie as tabelas a partir do arquivo `schema.sql`:
+
+
+```bash
+psql -U postgres -d controle_estoque -f schema.sql
+```
+
+### 6.3. Criar o usuário da aplicação
+
+Crie um usuário próprio:
+
+```sql
+CREATE USER app_estoque WITH PASSWORD 'sua_senha';
+```
+
+### 6.4. Conceder as permissões
+
+O usuário da aplicação recebe apenas as permissões necessárias em cada tabela:
+
+```sql
+GRANT SELECT, INSERT, UPDATE, DELETE ON produtos TO app_estoque;
+GRANT SELECT, INSERT ON api_clients TO app_estoque;
+```
+
+- `produtos`: leitura, cadastro, atualização e exclusão, usadas pelas rotas da API.
+- `api_clients`: cadastro de chaves, pelo comando `gerar-chave`, e consulta, pelo middleware de autenticação.
+
+### 6.5. Configurar as variáveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto, conforme o exemplo da seção 4, usando o usuário e a senha criados no passo 6.3.
+
+### 6.6. Gerar uma chave de API
+
+```bash
+go run ./cmd/gerar-chave NOME_DO_CLIENTE
+```
+
+A chave é exibida uma única vez no terminal. Guarde-a: o banco armazena apenas o hash SHA-256 da chave.
+
+### 6.7. Iniciar o servidor
 
 ```bash
 go build ./...
@@ -108,3 +155,5 @@ Para executar:
 ```bash
 go run main.go
 ```
+
+O servidor fica disponível em `http://localhost:8080`.

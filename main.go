@@ -1,8 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"controle_estoque/config"
+	"controle_estoque/handlers"
+	"controle_estoque/repository"
+	"controle_estoque/routes"
+	"fmt"
+	"net/http"
 )
 
 func main() {
@@ -15,4 +19,17 @@ func main() {
 	defer db.Close()
 
 	fmt.Println("Conexão com o PostgreSQL realizada com sucesso!")
+
+	repositorio := &repository.ProdutoRepositoryDB{DB: db}
+	handler := &handlers.ProdutoHandler{Repository: repositorio}
+
+	mux := http.NewServeMux()
+	routes.RegistrarRotas(mux, handler, db)
+
+	fmt.Println("Servidor rodando em http://localhost:8080")
+
+	err = http.ListenAndServe(":8080", mux)
+	if err != nil {
+		fmt.Println("Erro ao iniciar servidor:", err)
+	}
 }
